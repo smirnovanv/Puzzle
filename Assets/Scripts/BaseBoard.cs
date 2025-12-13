@@ -68,11 +68,49 @@ public class BaseBoard : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                int ballTypeToUse = Random.Range(0, ballsPrefabs.Length);
+                int ballTypeToUse;
+                do
+                {
+                    // Пробуем случайный тип
+                    ballTypeToUse = Random.Range(0, ballsPrefabs.Length);
+                }
+                // Проверяем, не создаст ли это 3 в ряд
+                while (HasMatchAt(i, j, ballTypeToUse));
+
                 gameBoard[i, j] = new BallData(i, j, ballTypeToUse);
             }
-
         }
+    }
+
+    private bool HasMatchAt(int x, int y, int ballType)
+    {
+        // Проверка по горизонтали (влево)
+        if (x >= 2)
+        {
+            BallData left1 = gameBoard[x - 1, y];
+            BallData left2 = gameBoard[x - 2, y];
+
+            if (left1 != null && left2 != null &&
+                left1.type == ballType && left2.type == ballType)
+            {
+                return true;
+            }
+        }
+
+        // Проверка по вертикали (вниз/вверх - зависит от порядка заполнения)
+        if (y >= 2)
+        {
+            BallData down1 = gameBoard[x, y - 1];
+            BallData down2 = gameBoard[x, y - 2];
+
+            if (down1 != null && down2 != null &&
+                down1.type == ballType && down2.type == ballType)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     private void VisualizeBoard()
     {
@@ -462,7 +500,7 @@ public class BaseBoard : MonoBehaviour
             Color originalColor = originalMaterial.color;
 
             // Меняем цвет материала
-            meshRenderer.material.color = Color.red;
+            meshRenderer.material.color = Color.white;
             yield return new WaitForSeconds(0.5f);
 
             // Возвращаем оригинальный цвет

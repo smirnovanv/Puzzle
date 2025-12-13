@@ -267,6 +267,9 @@ MonoBehaviour:
   - {fileID: 8807432658441660860, guid: 2dec65dc2ba135644a7a3a579d4abe05, type: 3}
   - {fileID: 887144975116405566, guid: e69a01d0a42820547b5f5147311834c0, type: 3}
   - {fileID: 4509710448273902031, guid: 5ad6ff01d5ecbc546808cc83d35e9bad, type: 3}
+  ballLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1095702002
 GameObject:
   m_ObjectHideFlags: 0

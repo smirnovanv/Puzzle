@@ -19,6 +19,7 @@ public class BaseBoard : MonoBehaviour
  
     // переменные для обработки перетаскивания шара
     private BallData selectedBall = null;
+    private BallData targetBall = null;
     private Vector2 dragStartPosition;
     private bool isDragging = false;
     private float minDragDistance = 0.5f;
@@ -60,7 +61,6 @@ public class BaseBoard : MonoBehaviour
     }
 
     // метод создания сетки со случайным наполнением шарами
-    // TODO: доработать, чтобы не было совпадений на старте
     // TODO: доработать для создания доски по сценарию для уровней
     private void CreateBoard()
     {
@@ -191,7 +191,8 @@ public class BaseBoard : MonoBehaviour
             //Проверяем, есть ли шарик в целевой клетке
             if (IsValidPosition(targetPos.x, targetPos.y))
             {
-                BallData targetBall = gameBoard[targetPos.x, targetPos.y];
+                targetBall = gameBoard[targetPos.x, targetPos.y];
+
                 if (targetBall != null)
                 {
                     // Меняем шарики местами
@@ -201,7 +202,7 @@ public class BaseBoard : MonoBehaviour
         }
 
         // Снимаем выделение
-        selectedBall = null;
+        // selectedBall = null;
         isDragging = false;
     }
 
@@ -235,6 +236,8 @@ public class BaseBoard : MonoBehaviour
         };
     }
     // Вспом. методы для определения направления перемещения шарика (EndDrag): КОНЕЦ
+
+    // изменение позиции шаров визуально и в модели доски
     private System.Collections.IEnumerator SwapBalls(BallData ball1, BallData ball2)
     {
         isInputEnabled = false;
@@ -518,6 +521,11 @@ public class BaseBoard : MonoBehaviour
     {
         List<MatchInfo> allMatches = FindAllMatches();
 
+        BallData ball1 = selectedBall;
+        BallData ball2 = targetBall;
+
+        ClearBallSelection();
+
         if (allMatches.Count > 0)
         {
           // Удаляем совпавшие шарики
@@ -525,7 +533,59 @@ public class BaseBoard : MonoBehaviour
             return true;
         }
 
+        // todo меняем местами на доске визуально и в модели доски
+        StartCoroutine(UnswapBalls(ball1, ball2));
+
         return false;
+    }
+
+    private void ClearBallSelection() {
+        selectedBall = null;
+        targetBall = null;
+    }
+
+    private System.Collections.IEnumerator UnswapBalls(BallData ball1, BallData ball2) {
+        isInputEnabled = false;
+
+        Debug.Log($"Swapping ({ball1.x},{ball1.y}) with ({ball2.x},{ball2.y})");
+
+        // Визуальная анимация обмена
+        Vector3 pos1 = ball1.visualObject.transform.position;
+        Vector3 pos2 = ball2.visualObject.transform.position;
+
+        float duration = 0.3f;
+        float elapsed = 0;
+
+        while (elapsed < duration)
+        {
+            ball1.visualObject.transform.position = Vector3.Lerp(pos1, pos2, elapsed / duration);
+            ball2.visualObject.transform.position = Vector3.Lerp(pos2, pos1, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Обновляем позиции
+        ball1.visualObject.transform.position = pos2;
+        ball2.visualObject.transform.position = pos1;
+
+        // Меняем данные в игровой модели
+        int tempX = ball1.x;
+        int tempY = ball1.y;
+
+        // Обновляем координаты в BallData
+        ball1.x = ball2.x;
+        ball1.y = ball2.y;
+        ball2.x = tempX;
+        ball2.y = tempY;
+
+        // Меняем местами в массиве gameBoard
+        gameBoard[ball1.x, ball1.y] = ball1;
+        gameBoard[ball2.x, ball2.y] = ball2;
+
+        // не вносим изменения в словарь ballLookup, т.к. при совпадении удалим объекты (тогда фиксируем в словарь)
+        // либо шары вернутся назад
+
+        isInputEnabled = true;
     }
 
     private System.Collections.IEnumerator RemoveMatchedBalls()

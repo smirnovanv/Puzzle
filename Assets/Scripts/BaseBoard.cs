@@ -539,6 +539,18 @@ public class BaseBoard : MonoBehaviour
         return false;
     }
 
+    private bool CheckForCascadeMatches()
+    {
+        List<MatchInfo> allMatches = FindAllMatches();
+
+        if (allMatches.Count > 0)
+        {
+            StartCoroutine(RemoveMatchedBalls());
+            return true;
+        }
+        return false;
+    }
+
     private void ClearBallSelection() {
         selectedBall = null;
         targetBall = null;
@@ -617,16 +629,17 @@ public class BaseBoard : MonoBehaviour
         yield return StartCoroutine(ShiftBallsDown());
 
         // Заполняем пустые клетки
-        // yield return StartCoroutine(FillEmptySpaces());
+        yield return StartCoroutine(FillEmptySpaces());
 
         // Проверяем новые совпадения (каскадные совпадения)
-        // bool newMatches = CheckForMatches();
+        bool newMatches = CheckForCascadeMatches();
 
-        //if (!newMatches)
-        //{
-        //    // Активируем бонусы, если они есть
-        //    ActivateBonuses();
-        //}
+        // Если есть новые совпадения, повторяем процесс
+        while (newMatches)
+        {
+            yield return new WaitForSeconds(0.5f); // Пауза между каскадами
+            newMatches = CheckForCascadeMatches();
+        }
     }
 
     private System.Collections.IEnumerator ShiftBallsDown()
@@ -728,7 +741,7 @@ public class BaseBoard : MonoBehaviour
     }
 
     // Метод для расчета длительности падения в зависимости от расстояния
-    private float CalculateFallDuration(int distance)
+    private float CalculateFallDuration(float distance)
     {
         // Базовое время + дополнительное время за каждую клетку
         return 0.1f + (distance * 0.08f);
@@ -815,6 +828,130 @@ public class BaseBoard : MonoBehaviour
         }
 
         ballVisual.transform.position = basePosition;
+    }
+
+    private System.Collections.IEnumerator FillEmptySpaces()
+    {
+        Debug.Log("=== ЗАПОЛНЕНИЕ ПУСТЫХ КЛЕТОК ===");
+
+        // Собираем все пустые клетки, которые нужно заполнить
+        List<Vector2Int> emptyCells = new List<Vector2Int>();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (gameBoard[x, y] == null)
+                {
+                    emptyCells.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        Debug.Log($"Найдено {emptyCells.Count} пустых клеток для заполнения");
+
+        // Генерируем новые шарики для каждой пустой клетки
+        List<BallGeneration> newBalls = new List<BallGeneration>();
+
+        foreach (Vector2Int cell in emptyCells)
+        {
+            int newType;
+            do
+            {
+                newType = Random.Range(0, ballsPrefabs.Length);
+            }
+            while (HasMatchAt(cell.x, cell.y, newType));
+
+            BallData newBall = new BallData(cell.x, cell.y, newType);
+            gameBoard[cell.x, cell.y] = newBall;
+
+            // Создаем визуальный объект выше доски
+            Vector3 startPosition = new Vector3(cell.x, height + 1, 0);
+            GameObject ballPrefab = ballsPrefabs[newType];
+            GameObject ballVisual = Instantiate(ballPrefab, startPosition, Quaternion.identity);
+            ballVisual.transform.parent = this.transform;
+            ballVisual.name = $"New Ball ({cell.x}, {cell.y}) - {newType}";
+
+            // Устанавливаем слой
+            int ballsLayerIndex = LayerMask.NameToLayer("Balls");
+            if (ballsLayerIndex != -1)
+            {
+                ballVisual.layer = ballsLayerIndex;
+            }
+
+            newBall.visualObject = ballVisual;
+            ballLookup[ballVisual] = newBall;
+
+            newBalls.Add(new BallGeneration
+            {
+                ball = newBall,
+                targetPosition = new Vector3(cell.x, cell.y, 0),
+                fallDistance = height + 1 - cell.y
+            });
+        }
+
+        // Запускаем анимации падения всех новых шариков одновременно
+        List<Coroutine> animations = new List<Coroutine>();
+
+        foreach (BallGeneration generation in newBalls)
+        {
+            float duration = CalculateFallDuration(generation.fallDistance);
+            Coroutine animation = StartCoroutine(
+                DropNewBall(generation.ball.visualObject, generation.targetPosition, duration));
+            animations.Add(animation);
+        }
+
+        // Ждем завершения всех анимаций
+        foreach (Coroutine animation in animations)
+        {
+            yield return animation;
+        }
+
+        Debug.Log($"=== ЗАПОЛНЕНИЕ ЗАВЕРШЕНО ===");
+    }
+
+    private class BallGeneration
+    {
+        public BallData ball;
+        public Vector3 targetPosition;
+        public float fallDistance;
+    }
+
+    private System.Collections.IEnumerator DropNewBall(GameObject ballVisual, Vector3 targetPosition, float duration)
+    {
+        if (ballVisual == null) yield break;
+
+        Vector3 startPosition = ballVisual.transform.position;
+        float elapsed = 0;
+
+        // Небольшая случайная задержка для эффекта каскада
+        float randomDelay = Random.Range(0f, 0.1f);
+        yield return new WaitForSeconds(randomDelay);
+
+        while (elapsed < duration)
+        {
+            float progress = elapsed / duration;
+            float t = progress;
+
+            // Параболическая траектория с ускорением
+            float verticalProgress = t * t;
+            float horizontalProgress = t;
+
+            Vector3 currentPos = new Vector3(
+                Mathf.Lerp(startPosition.x, targetPosition.x, horizontalProgress),
+                Mathf.Lerp(startPosition.y, targetPosition.y, verticalProgress),
+                0
+            );
+
+            ballVisual.transform.position = currentPos;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        ballVisual.transform.position = targetPosition;
+
+        // Эффект отскока при приземлении
+        yield return StartCoroutine(BounceEffect(ballVisual, targetPosition));
     }
 
 }

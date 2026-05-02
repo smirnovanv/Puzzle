@@ -12,6 +12,14 @@ TagManager:
   - OrangeSphere
   - PurpleSphere
   - PinkSphere
+  - Dark Blue Dot
+  - Green Dot
+  - Light Blue Dot
+  - Orange Dot
+  - Pink Dot
+  - Purple Dot
+  - Red Dot
+  - Yellow Dot
   layers:
   - Default
   - TransparentFX
@@ -19,7 +27,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Balls
   - 
   - 
   - 
@@ -48,6 +56,12 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 2525475201
+    locked: 0
+  - name: New Layer 2
+    uniqueID: 2937817365
     locked: 0
   m_RenderingLayers:
   - Default

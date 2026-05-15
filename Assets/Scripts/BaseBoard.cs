@@ -211,7 +211,6 @@ public class BaseBoard : MonoBehaviour
     {
         return x >= 0 && x < width && y >= 0 && y < height;
     }
-    private enum Direction { Up, Down, Left, Right, None }
     private Direction GetDragDirection(Vector2 dragVector)
     {
         // Определяем основное направление по наибольшей компоненте

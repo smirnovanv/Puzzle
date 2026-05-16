@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class BaseBoard2 : MonoBehaviour
+public class BaseBoard3 : MonoBehaviour
 {
     // ширина и высота поля
     public int width;
@@ -15,6 +15,17 @@ public class BaseBoard2 : MonoBehaviour
 
     // слой с шарами для регистрации нажатия
     public LayerMask ballLayer;
+
+    public event Action OnMove;
+
+    public void Initialize(int _width, int _height, GameObject[] _ballsPrefabs, GameObject _tilePrefab, LayerMask _ballLayer)
+    {
+        width = _width;
+        height = _height;
+        ballsPrefabs = _ballsPrefabs;
+        tilePrefab = _tilePrefab;
+        ballLayer = _ballLayer;
+    }
 
     private VirtualBoard board;
     private VirtualBoardRender boardRenderer;
@@ -76,7 +87,8 @@ public class BaseBoard2 : MonoBehaviour
         StartCoroutine(ProcessSwipeCoroutine(selectedCell, targetCell));
     }
 
-    private IEnumerator ProcessSwipeCoroutine(CellData selectedCell, CellData targetCell) {
+    private IEnumerator ProcessSwipeCoroutine(CellData selectedCell, CellData targetCell)
+    {
         bool hasMatches = false;
         bool animationCompleted = false;
 
@@ -101,6 +113,7 @@ public class BaseBoard2 : MonoBehaviour
             Debug.Log("✅ Matches found! Move is valid.");
             _deleteBallDataHandler.RemoveMatchedBalls();
 
+            OnMove?.Invoke();
             // изменение данных доски
             List<BallShiftData> ballMovements = _shiftBallDataChanger.Change();
             List<CellData>[] cellsToFill = board.GenerateExtraBalls();
@@ -236,8 +249,9 @@ public class BaseBoard2 : MonoBehaviour
         {
             _inputHandler.OnSwipe -= HandleSwipe;
             _inputHandler.OnDragCanceled -= HandleDragCanceled;
-                                                                // Если есть другие события - отписываемся и от них
+            // Если есть другие события - отписываемся и от них
         }
     }
 
 }
+

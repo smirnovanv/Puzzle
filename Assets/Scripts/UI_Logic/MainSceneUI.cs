@@ -23,7 +23,7 @@ public class MainSceneUI : MonoBehaviour
     {
         Debug.Log("StartGame");
 
-        _sceneChanger.ChangeScene((int)ScenesDictionary.BaseScene);
+        _sceneChanger.ChangeScene((int)ScenesDictionary.Level1);
     }
 
     // Update is called once per frame

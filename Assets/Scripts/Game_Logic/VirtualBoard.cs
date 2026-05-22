@@ -43,12 +43,6 @@ public class VirtualBoard
         }
     }
 
-    private class BallGeneration
-    {
-        public BallData ball;
-        public Vector3 targetPosition;
-        public float fallDistance;
-    }
     public List<CellData>[] GenerateExtraBalls()
     {
         Debug.Log("=== ЗАПОЛНЕНИЕ ПУСТЫХ КЛЕТОК ===");
@@ -88,44 +82,7 @@ public class VirtualBoard
         Debug.Log($"Клетки созданы");
         return cellsToFill;
 
-        // List<BallGeneration> newBalls = new List<BallGeneration>();
-
-        //foreach (Vector2Int cell in emptyCells)
-        //{
-        //    int newType;
-        //    do
-        //    {
-        //        newType = Random.Range(0, _ballsPrefabs.Length);
-        //    }
-        //    while (HasMatchAt(cell.x, cell.y, newType));
-
-        //    BallData2 newBall = new BallData2(newType);
-        //    _gameBoard[cell.x, cell.y].ball = newBall;
-
-        // Создаем визуальный объект выше доски
-        //Vector3 startPosition = new Vector3(cell.x, _height + 1, 0);
-        //GameObject ballPrefab = _ballsPrefabs[newType];
-        //GameObject ballVisual = Instantiate(ballPrefab, startPosition, Quaternion.identity);
-        //ballVisual.transform.parent = this.transform;
-        //ballVisual.name = $"New Ball ({cell.x}, {cell.y}) - {newType}";
-
-        //// Устанавливаем слой
-        //int ballsLayerIndex = LayerMask.NameToLayer("Balls");
-        //if (ballsLayerIndex != -1)
-        //{
-        //    ballVisual.layer = ballsLayerIndex;
-        //}
-
-        //newBall.visualObject = ballVisual;
-        //ballLookup[ballVisual] = newBall;
-
-        //newBalls.Add(new BallGeneration
-        //{
-        //    ball = newBall,
-        //    targetPosition = new Vector3(cell.x, cell.y, 0),
-        //    fallDistance = height + 1 - cell.y
-        //});
-        //}
+       
     }
     // проверка на валидность при генерации поля
     private bool HasMatchAt(int x, int y, int ballType)

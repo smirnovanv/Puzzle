@@ -13,9 +13,6 @@ public class MatchChecker
     {
         _board = board;
     }
-    //public Boolean Check(VirtualBoard board) {
-    //    return false;
-    //}
 
     public List<MatchData> FindAllMatches()
     {
@@ -45,18 +42,6 @@ public class MatchChecker
         horizontalMatches.Clear();
         verticalMatches.Clear();
         allMatchedCells.Clear();
-
-        // —брасываем флаги совпадений у всех шариков
-        //for (int x = 0; x < _board._width; x++)  // todo пересмотреть, шарики должны быть удалены
-        //{
-        //    for (int y = 0; y < _board._height; y++)
-        //    {
-        //        if (_board._gameBoard[x, y] != null)
-        //        {
-        //            _board._gameBoard[x, y].ball.isMatched = false;
-        //        }
-        //    }
-        //}
     }
 
     private void LogMatchesInfo(List<MatchData> allMatches)
@@ -214,12 +199,6 @@ public class MatchChecker
             {
                 cell.ball.isMatched = true;
                 allMatchedCells.Add(cell);
-
-                //¬изуально помечаем шарик(подсветка на короткое врем€)
-                //if (ball.visualObject != null)
-                //{
-                //    StartCoroutine(HighlightMatchedBall(ball.visualObject));
-                //}
             }
         }
     }
